@@ -45,10 +45,26 @@ var feed = new function () {
 };
 
 var ITEMS_BACKLOG = 20;
+var firstUser = null;
+var firstUserName = null;
 
 var urlMap = {
+  '/connect' : function (req, res) {
+    console.log('Connect action');
+    var userId = qs.parse(url.parse(req.url).query).userId;
+    var userName = qs.parse(url.parse(req.url).query).userName;
+    if(firstUser == null){
+      firstUser = userId;
+      firstUserName = userName;
+      res.simpleJSON(200, "wait");
+    } else {
+      res.simpleJSON(200, {userId:firstUser, userName: firstUserName}); 
+      firstUser = null;
+      firstUserName = null;
+    }
+  },
   '/receive' : function (req, res) {
-      console.log('Receive action');
+    console.log('Receive action');
     var since = parseInt(qs.parse(url.parse(req.url).query).timestamp, 10);
     feed.query(since, function (data) {
       res.simpleJSON(200, data);
@@ -67,6 +83,7 @@ var urlMap = {
     res.simpleJSON(200, {});
   }
 };
+
 
 var NOT_FOUND = "Not Found\n";
 

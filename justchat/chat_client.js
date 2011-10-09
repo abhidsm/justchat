@@ -1,4 +1,4 @@
-var USER = { name: "" };
+var USER = { name: "", id: "", joinId: "", joinName: "" };
 
 //used to keep the most recent messages visible
 function scrollDown () {
@@ -84,6 +84,27 @@ function send(msg) {
     jQuery.get("/send", {timestamp: (new Date()).getTime(), user: USER.name, text: msg}, function (data) { }, "json");
 }
 
+//join the chat
+function connect() {
+  $.ajax({
+    type: "GET",
+    url: "/connect",
+    data: "userId="+USER.id+"&userName="+USER.name,
+    dataType: 'json',
+    success: function (json) {
+      console.log('Return data from connect: '+json.userId);
+      if(json != 'wait') {
+        console.log('First UserID: '+json.userId);
+        USER.joinId = json.userId;
+        USER.joinName = json.userName;
+        $('#flash').html("<p>You have joined to chat with '"+ json.userName+"'</p>");
+          $('#flash').fadeOut('slow');
+        showChat();
+      }
+    }
+  });
+}
+
 $(document).ready(function() {
 
   //submit new messages when the user hits enter if the message isnt blank
@@ -113,9 +134,12 @@ $(document).ready(function() {
       showConnect();
       return false;
     }
-                                
+    
+    //Assigning User details
+    var randomnumber=Math.floor(Math.random()*11111);
     USER.name = user;
-    showChat();
+    USER.id = randomnumber;
+    connect();
     return false;
   });
 

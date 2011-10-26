@@ -7,7 +7,7 @@ function scrollDown () {
 }
 
 function addMessage(user, text) {
-    var messageElement = $(document.createElement("table"));
+  var messageElement = $(document.createElement("table"));
 
   messageElement.addClass("message");
 
@@ -25,6 +25,11 @@ function addMessage(user, text) {
   scrollDown();
 }
 
+function clearMessage(){
+  $("#log").html(null);
+  $('#flash').html(null);
+}
+
 function displayMessage(data){
     addMessage(data[0].user, data[0].text);
 }
@@ -36,22 +41,44 @@ function longPoll() {
     dataType: 'json',
     type: "GET",
     url: "/receive",
+    data: "userId="+USER.id,
     error: function () {
-      //don't flood the servers on error, wait 10 seconds before retrying
-      setTimeout(longPoll, 10*1000);
+        checkPartnerExistsOrNot();
     },
     success: function (json) {
-      displayMessage(json);
-
-      //if everything went well, begin another request immediately
-      //the server will take a long time to respond
-      //how long? well, it will wait until there is another message
-      //and then it will return it to us and close the connection.
-      //since the connection is closed when we get data, we longPoll again
-      longPoll();
+      if(json[0].data == 'left'){
+        clearMessage();
+        showLoad();
+        connect();
+      }else {
+        displayMessage(json);
+        longPoll();
+      }
     }
   });
 }
+
+//Check whether partner exists
+function checkPartnerExistsOrNot(){
+  $.ajax({
+    cache: false,
+    dataType: 'json',
+    type: "GET",
+    url: "/checkPartner",
+    data: "joinId="+USER.joinId,
+    success: function (json) {
+      if(json[0].data == 'Yes'){
+          //don't flood the servers on error, wait 10 seconds before retrying
+          setTimeout(longPoll, 10*1000);
+      }else{
+          $(window).unload();
+          clearMessage();
+          showConnect();
+      }
+    }
+  });
+}
+
 
 //transition the page to the loading screen
 function showLoad () {
@@ -81,7 +108,8 @@ function showChat () {
 
 //submit a new message to the server
 function send(msg) {
-    jQuery.get("/send", {timestamp: (new Date()).getTime(), user: USER.name, text: msg}, function (data) { }, "json");
+  addMessage(USER.name, msg);
+  jQuery.get("/send", {timestamp: (new Date()).getTime(), user: USER.name, text: msg, to: USER.joinId}, function (data) { }, "json");
 }
 
 //join the chat
@@ -98,8 +126,8 @@ function connect() {
         USER.joinId = json.userId;
         USER.joinName = json.userName;
         $('#flash').html("<p>You have joined to chat with '"+ json.userName+"'</p>");
-          $('#flash').fadeOut('slow');
         showChat();
+        longPoll();
       }
     }
   });
@@ -113,6 +141,13 @@ $(document).ready(function() {
     var msg = $("#entry").attr("value").replace("\n", "");
     send(msg);
     $("#entry").attr("value", ""); // clear the entry field.
+  });
+
+  //Leave the chat
+  $('#leave').click(function(){
+    $(window).unload();
+    clearMessage();
+    showConnect();
   });
 
   //try joining the chat when the user clicks the connect button
@@ -143,10 +178,11 @@ $(document).ready(function() {
     return false;
   });
 
-  //begin listening for updates right away
-  //interestingly, we don't need to join a room to get its updates
-  //we just don't show the chat stream to the user until we create a session
-  longPoll();
+  //if we can, notify the server that we're going away.
+  $(window).unload(function () {
+    jQuery.get("/leave", {userId: USER.id, joinId: USER.joinId}, function (data) { }, "json");
+  });
+
 
   showConnect();
 });

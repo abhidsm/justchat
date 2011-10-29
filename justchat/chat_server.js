@@ -55,7 +55,7 @@ var feed = new function () {
   this.join = function(req, callback) {
     var userId = qs.parse(url.parse(req.url).query).userId;
     var userName = qs.parse(url.parse(req.url).query).userName;
-    if(firstUser == null){
+    if(firstUser == null || firstUser == userId){
       firstUser = userId;
       firstUserName = userName;
       joinCallback = callback;

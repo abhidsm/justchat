@@ -3,17 +3,36 @@
     <link rel="stylesheet" href="style.css" type="text/css"/>
     <script src="jquery-1.5.min.js" type="text/javascript"></script>
     <script src="chat_client.js" type="text/javascript"></script>
-    <title>node chat</title>
+    <title>JustChat: a private chat application developed using node.js</title>
+    <meta name="description" content="JustChat is a private chat
+    application developed using node.js. The chat client and server are
+    written in javascript.">
+
+    <script type="text/javascript">
+      
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-26651475-1']);
+      _gaq.push(['_trackPageview']);
+      
+      (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+      
+    </script>
+
   </head>
   <body>
+    <div id="header">
+      <img id="logo" src="justChatBG.png"/>
+    </div>
     <div id="app">
       <div id="connect">
         <form action="#">
           <fieldset> 
             <p>
-              This is a chat room. Both the client-side and server-side are
-              written in javascript. The source code is
-              <a href="#">here</a>.
+              This is a private chat application. Please enter your name to join the chat.
             </p>
 
             <label for="user">Name</label>
@@ -32,5 +51,6 @@
         <input tabindex="1" type="text" id="entry"/>
         <input type="button" id="leave" value="Leave"/>
       </div>
+    </div>
   </body>
 </html>

@@ -2,17 +2,17 @@ var USER = { name: "", id: "", joinId: "", joinName: "" };
 
 //used to keep the most recent messages visible
 function scrollDown () {
-  window.scrollBy(0, 100000000000000000);
+  $('#log').scrollTop(100000000000000000);
   $("#entry").focus();
 }
 
-function addMessage(user, text) {
+function addMessage(user, text, color) {
   var messageElement = $(document.createElement("table"));
 
   messageElement.addClass("message");
 
   var content = '<tr>'
-              + '  <td class="user">' + user + '</td>'
+              + '  <td class="user" style="color:'+color+';">' + user + ':</td>'
               + '  <td class="msg-text">' + text  + '</td>'
               + '</tr>'
               ;
@@ -31,7 +31,7 @@ function clearMessage(){
 }
 
 function displayMessage(data){
-    addMessage(data[0].user, data[0].text);
+    addMessage(data[0].user, data[0].text, 'blue');
 }
 
 function longPoll() {
@@ -85,6 +85,7 @@ function showLoad () {
   $("#connect").hide();
   $("#loading").show();
   $("#toolbar").hide();
+  $("#log").hide();
 }
 
 //Transition the page to the state that prompts the user for a nickname
@@ -93,6 +94,7 @@ function showConnect () {
   $("#loading").hide();
   $("#toolbar").hide();
   $("#user").focus();
+  $("#log").hide();
 }
 
 //transition the page to the main chat view, putting the cursor in the textfield
@@ -102,13 +104,13 @@ function showChat () {
 
   $("#connect").hide();
   $("#loading").hide();
-
+  $("#log").show();
   scrollDown();
 }
 
 //submit a new message to the server
 function send(msg) {
-  addMessage(USER.name, msg);
+  addMessage(USER.name, msg, 'red');
   jQuery.get("/send", {timestamp: (new Date()).getTime(), user: USER.name, text: msg, to: USER.joinId}, function (data) { }, "json");
 }
 
@@ -119,6 +121,9 @@ function connect() {
     url: "/connect",
     data: "userId="+USER.id+"&userName="+USER.name,
     dataType: 'json',
+    error: function () {
+      setTimeout(connect, 10*1000);
+    },
     success: function (json) {
       console.log('Return data from connect: '+json.userId);
       if(json != 'wait') {
@@ -139,6 +144,7 @@ $(document).ready(function() {
   $("#entry").keypress(function (e) {
     if (e.keyCode != 13 /* Return */) return;
     var msg = $("#entry").attr("value").replace("\n", "");
+    if(msg.length == 0) return;
     send(msg);
     $("#entry").attr("value", ""); // clear the entry field.
   });
@@ -152,29 +158,31 @@ $(document).ready(function() {
 
   //try joining the chat when the user clicks the connect button
   $("#connectButton").click(function () {
-    //lock the UI while waiting for a response
-    showLoad();
     var user = $("#user").attr("value");
+    if(user.length != 0){
+        //lock the UI while waiting for a response
+        showLoad();
+        
+        //dont bother the backend if we fail easy validations
+        if (user.length > 50) {
+            alert("Name too long. 50 character max.");
+            showConnect();
+            return false;
+        }
 
-    //dont bother the backend if we fail easy validations
-    if (user.length > 50) {
-      alert("Name too long. 50 character max.");
-      showConnect();
-      return false;
-    }
-
-    //more validations
-    if (/[^\w_\-^!]/.exec(user)) {
-      alert("Bad character in name. Can only have letters, numbers, and '_', '-', '^', '!'");
-      showConnect();
-      return false;
-    }
+        //more validations
+        if (/[^\w_\-^!]/.exec(user)) {
+            alert("Bad character in name. Can only have letters, numbers, and '_', '-', '^', '!'");
+            showConnect();
+            return false;
+        }
     
-    //Assigning User details
-    var randomnumber=Math.floor(Math.random()*11111);
-    USER.name = user;
-    USER.id = randomnumber;
-    connect();
+        //Assigning User details
+        var randomnumber=Math.floor(Math.random()*11111);
+        USER.name = user;
+        USER.id = randomnumber;
+        connect();
+    }
     return false;
   });
 
@@ -184,6 +192,6 @@ $(document).ready(function() {
   });
 
 
-  showConnect();
+  showConnect();                          
 });
 

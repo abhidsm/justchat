@@ -1,3 +1,4 @@
+body{margin:0;}
 #header #logo{padding-bottom: 20px;}
 #connect {width:500px;margin:auto;padding-top:100px;}
 #connect fieldset{border-width: 15px;border-top-color: red;border-left-color: red;border-bottom-color: blue;border-right-color: blue;}
@@ -5,5 +6,6 @@
 #flash p {text-align: center;font-size: 1.5em;}
 #log {height:450px;overflow-y: auto;background-color: #EEE;}
 td.user {font-size: 1.2em;}
-input#entry {border-style: solid;border-width: 1px;width: 90%;font-size: 1.2em;}
+input#entry {margin-left:8px;border-style: solid;border-width: 1px;width: 90%;font-size: 1.2em;}
 input#leave {color: white;background-color: red;border-color: red;font-size: 1.1em;}
+

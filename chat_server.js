@@ -149,6 +149,7 @@ function notFound(req, res) {
   res.end(NOT_FOUND);
 }
 
+var port = process.env.PORT || 5000;
 http.createServer(function (req, res) {
 
   console.log('request starting...');
@@ -210,5 +211,5 @@ http.createServer(function (req, res) {
     });
 
 
-}).listen(12197);
+}).listen(port);
 
